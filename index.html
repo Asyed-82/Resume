@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Resume Builder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        .editor-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            height: fit-content;
+        }
+        
+        .resume-preview {
+            flex: 2;
+            min-width: 500px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        h3 {
+            color: #3498db;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .photo-section {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .photo-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 4px solid #3498db;
+        }
+        
+        .photo-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            border: 4px dashed #bdc3c7;
+        }
+        
+        .photo-placeholder i {
+            font-size: 48px;
+            color: #7f8c8d;
+        }
+        
+        .job-item {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .job-title {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .job-company {
+            color: #3498db;
+            font-style: italic;
+        }
+        
+        .job-dates {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .job-duties {
+            padding-left: 20px;
+        }
+        
+        .job-duty {
+            margin-bottom: 5px;
+        }
+        
+        .resume-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .resume-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #3498db;
+        }
+        
+        .resume-name {
+            font-size: 32px;
+            color: #2c3e50;
+        }
+        
+        .resume-title {
+            font-size: 20px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .resume-section {
+            margin-bottom: 25px;
+        }
+        
+        .resume-section-title {
+            background-color: #ecf0f1;
+            padding: 10px 15px;
+            border-left: 5px solid #3498db;
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: #2c3e50;
+        }
+        
+        .resume-job {
+            margin-bottom: 20px;
+        }
+        
+        .resume-job-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        
+        .resume-job-company {
+            color: #3498db;
+            font-size: 16px;
+        }
+        
+        .resume-job-dates {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .resume-job-duties {
+            padding-left: 20px;
+        }
+        
+        .resume-job-duty {
+            margin-bottom: 5px;
+        }
+        
+        .education-item {
+            margin-bottom: 15px;
+        }
+        
+        .education-institution {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .education-degree {
+            color: #3498db;
+        }
+        
+        .education-dates {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .empty-message {
+            color: #95a5a6;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .editor-panel, .resume-preview {
+                min-width: 100%;
+            }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+            <h1><i class="fas fa-edit"></i> Resume Editor</h1>
+            
+            <div class="instructions">
+                <h3>How to use:</h3>
+                <p>1. Edit all sections of the resume below</p>
+                <p>2. Add/remove job experiences as needed</p>
+                <p>3. Upload a profile photo</p>
+                <p>4. Click "Download PDF" when finished</p>
+            </div>
+            
+            <!-- Photo Upload -->
+            <div class="section">
+                <h2><i class="fas fa-camera"></i> Profile Photo</h2>
+                <div class="photo-section">
+                    <div id="photoPreview" class="photo-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <input type="file" id="photoUpload" accept="image/*" class="hidden">
+                    <button type="button" class="btn" id="uploadPhotoBtn">
+                        <i class="fas fa-upload"></i> Upload Photo
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Personal Information -->
+            <div class="section">
+                <h2><i class="fas fa-user"></i> Personal Information</h2>
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" value="Daniel Gallego">
+                </div>
+                <div class="form-group">
+                    <label for="title">Professional Title</label>
+                    <input type="text" id="title" value="MARKETING MANAGER">
+                </div>
+                <div class="form-group">
+                    <label for="about">About Me</label>
+                    <textarea id="about">Apasionado del marketing, me define por ser una persona con ganas de aprender y un gran líder de equipos multidisciplinarios. He trabajado en varias empresas destinadas a la publicidad y el marketing.</textarea>
+                </div>
+            </div>
+            
+            <!-- Work Experience -->
+            <div class="section">
+                <h2><i class="fas fa-briefcase"></i> Work Experience</h2>
+                <div id="jobsContainer">
+                    <!-- Jobs will be added here dynamically -->
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn" id="addJobBtn">
+                        <i class="fas fa-plus"></i> Add Job
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Education -->
+            <div class="section">
+                <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+                <div id="educationContainer">
+                    <!-- Education items will be added here dynamically -->
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn" id="addEducationBtn">
+                        <i class="fas fa-plus"></i> Add Education
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="section">
+                <h2><i class="fas fa-download"></i> Export Resume</h2>
+                <div class="btn-group">
+                    <button type="button" class="btn" id="downloadPdfBtn">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="resetBtn">
+                        <i class="fas fa-redo"></i> Reset to Default
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resume Preview -->
+        <div class="resume-preview" id="resumePreview">
+            <div class="resume-header">
+                <div>
+                    <h1 class="resume-name" id="previewName">Daniel Gallego</h1>
+                    <div class="resume-title" id="previewTitle">MARKETING MANAGER</div>
+                </div>
+                <img id="previewPhoto" src="" alt="Profile Photo" class="resume-photo hidden">
+                <div id="previewPhotoPlaceholder" class="photo-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            
+            <!-- About Me Section -->
+            <div class="resume-section">
+                <div class="resume-section-title">About Me</div>
+                <p id="previewAbout">Apasionado del marketing, me define por ser una persona con ganas de aprender y un gran líder de equipos multidisciplinarios. He trabajado en varias empresas destinadas a la publicidad y el marketing.</p>
+            </div>
+            
+            <!-- Work Experience Section -->
+            <div class="resume-section">
+                <div class="resume-section-title">Work Experience</div>
+                <div id="previewJobs">
+                    <!-- Jobs will be added here dynamically -->
+                </div>
+            </div>
+            
+            <!-- Education Section -->
+            <div class="resume-section">
+                <div class="resume-section-title">Education</div>
+                <div id="previewEducation">
+                    <!-- Education items will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data from the resume
+        const defaultData = {
+            name: "Daniel Gallego",
+            title: "MARKETING MANAGER",
+            about: "Apasionado del marketing, me define por ser una persona con ganas de aprender y un gran líder de equipos multidisciplinarios. He trabajado en varias empresas destinadas a la publicidad y el marketing.",
+            jobs: [
+                {
+                    title: "Marketing Manager",
+                    company: "Emprendedor, S.L.",
+                    startDate: "Enero 2023",
+                    endDate: "Abril 2025",
+                    duties: [
+                        "Creación de un plan de marketing.",
+                        "Definición de estrategias e ingresos.",
+                        "Control de los resultados de las acciones.",
+                        "Liderar un equipo de profesionales."
+                    ]
+                },
+                {
+                    title: "Marketing Manager",
+                    company: "Empresa de seguros, S.L.",
+                    startDate: "Enero 2022",
+                    endDate: "Abril 2024",
+                    duties: [
+                        "Planificación de estrategias de marketing.",
+                        "Evaluación del plan de marketing.",
+                        "Elaboración de propuestas comerciales."
+                    ]
+                },
+                {
+                    title: "Marketing Junior",
+                    company: "Empresa de seguros, S.L.",
+                    startDate: "Enero 2021",
+                    endDate: "Abril 2023",
+                    duties: [
+                        "Planificación de estrategias de marketing.",
+                        "Evaluación del plan de marketing.",
+                        "Elaboración de propuestas comerciales."
+                    ]
+                }
+            ],
+            education: [
+                {
+                    institution: "Universidad del mar",
+                    degree: "Educación en Marketing y Publicidad | A.Sud",
+                    startDate: "",
+                    endDate: ""
+                },
+                {
+                    institution: "Centro de estudios San Juan",
+                    degree: "Educación en Marketing",
+                    startDate: "Septiembre 2018",
+                    endDate: "Abril 2021"
+                },
+                {
+                    institution: "Escuela superior de negocios",
+                    degree: "Educación en Publicidad",
+                    startDate: "Septiembre 2016",
+                    endDate: "Julio 2018"
+                },
+                {
+                    institution: "Escuelas de negocios",
+                    degree: "Educación en Publicidad",
+                    startDate: "Septiembre 2010",
+                    endDate: "Julio 2016"
+                }
+            ]
+        };
+
+        // Initialize with default data
+        let resumeData = JSON.parse(JSON.stringify(defaultData));
+        let photoData = null;
+
+        // DOM Elements
+        const nameInput = document.getElementById('name');
+        const titleInput = document.getElementById('title');
+        const aboutInput = document.getElementById('about');
+        const jobsContainer = document.getElementById('jobsContainer');
+        const educationContainer = document.getElementById('educationContainer');
+        const addJobBtn = document.getElementById('addJobBtn');
+        const addEducationBtn = document.getElementById('addEducationBtn');
+        const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+        const photoUpload = document.getElementById('photoUpload');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // Preview elements
+        const previewName = document.getElementById('previewName');
+        const previewTitle = document.getElementById('previewTitle');
+        const previewAbout = document.getElementById('previewAbout');
+        const previewJobs = document.getElementById('previewJobs');
+        const previewEducation = document.getElementById('previewEducation');
+        const previewPhoto = document.getElementById('previewPhoto');
+        const previewPhotoPlaceholder = document.getElementById('previewPhotoPlaceholder');
+        const photoPreview = document.getElementById('photoPreview');
+
+        // Initialize the resume
+        function initResume() {
+            // Set up input event listeners
+            nameInput.addEventListener('input', updatePreview);
+            titleInput.addEventListener('input', updatePreview);
+            aboutInput.addEventListener('input', updatePreview);
+            
+            // Set up button event listeners
+            addJobBtn.addEventListener('click', addJob);
+            addEducationBtn.addEventListener('click', addEducation);
+            uploadPhotoBtn.addEventListener('click', () => photoUpload.click());
+            photoUpload.addEventListener('change', handlePhotoUpload);
+            downloadPdfBtn.addEventListener('click', downloadPDF);
+            resetBtn.addEventListener('click', resetToDefault);
+            
+            // Load default data
+            loadData();
+            updatePreview();
+        }
+
+        // Load data into editor
+        function loadData() {
+            // Load jobs
+            jobsContainer.innerHTML = '';
+            resumeData.jobs.forEach((job, index) => {
+                addJobToEditor(job, index);
+            });
+            
+            // Load education
+            educationContainer.innerHTML = '';
+            resumeData.education.forEach((edu, index) => {
+                addEducationToEditor(edu, index);
+            });
+        }
+
+        // Add job to editor
+        function addJobToEditor(job, index) {
+            const jobElement = document.createElement('div');
+            jobElement.className = 'job-item';
+            jobElement.id = `job-${index}`;
+            
+            jobElement.innerHTML = `
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">${job.title}</div>
+                        <div class="job-company">${job.company}</div>
+                        <div class="job-dates">${job.startDate} - ${job.endDate}</div>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-small remove-job" data-index="${index}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="job-duties">
+                    ${job.duties.map(duty => `<div class="job-duty">${duty}</div>`).join('')}
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary btn-small edit-job" data-index="${index}">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </div>
+            `;
+            
+            jobsContainer.appendChild(jobElement);
+            
+            // Add event listeners for the buttons
+            jobElement.querySelector('.remove-job').addEventListener('click', () => removeJob(index));
+            jobElement.querySelector('.edit-job').addEventListener('click', () => editJob(index));
+        }
+
+        // Add education to editor
+        function addEducationToEditor(edu, index) {
+            const eduElement = document.createElement('div');
+            eduElement.className = 'job-item';
+            eduElement.id = `edu-${index}`;
+            
+            eduElement.innerHTML = `
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">${edu.institution}</div>
+                        <div class="job-company">${edu.degree}</div>
+                        <div class="job-dates">${edu.startDate} ${edu.endDate ? ' - ' + edu.endDate : ''}</div>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-small remove-education" data-index="${index}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary btn-small edit-education" data-index="${index}">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                </div>
+            `;
+            
+            educationContainer.appendChild(eduElement);
+            
+            // Add event listeners for the buttons
+            eduElement.querySelector('.remove-education').addEventListener('click', () => removeEducation(index));
+            eduElement.querySelector('.edit-education').addEventListener('click', () => editEducation(index));
+        }
+
+        // Add a new job
+        function addJob() {
+            const job = {
+                title: "New Job Title",
+                company: "Company Name",
+                startDate: "Start Date",
+                endDate: "End Date",
+                duties: ["First duty", "Second duty", "Third duty"]
+            };
+            
+            resumeData.jobs.push(job);
+            const index = resumeData.jobs.length - 1;
+            addJobToEditor(job, index);
+            updatePreview();
+            
+            // Scroll to the new job
+            document.getElementById(`job-${index}`).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Add a new education entry
+        function addEducation() {
+            const edu = {
+                institution: "Institution Name",
+                degree: "Degree/Certification",
+                startDate: "Start Date",
+                endDate: "End Date"
+            };
+            
+            resumeData.education.push(edu);
+            const index = resumeData.education.length - 1;
+            addEducationToEditor(edu, index);
+            updatePreview();
+            
+            // Scroll to the new education
+            document.getElementById(`edu-${index}`).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Remove a job
+        function removeJob(index) {
+            if (confirm("Are you sure you want to remove this job?")) {
+                resumeData.jobs.splice(index, 1);
+                loadData();
+                updatePreview();
+            }
+        }
+
+        // Remove an education entry
+        function removeEducation(index) {
+            if (confirm("Are you sure you want to remove this education entry?")) {
+                resumeData.education.splice(index, 1);
+                loadData();
+                updatePreview();
+            }
+        }
+
+        // Edit a job
+        function editJob(index) {
+            const job = resumeData.jobs[index];
+            
+            // Prompt for new values
+            const title = prompt("Enter job title:", job.title);
+            if (title === null) return;
+            
+            const company = prompt("Enter company name:", job.company);
+            if (company === null) return;
+            
+            const startDate = prompt("Enter start date:", job.startDate);
+            if (startDate === null) return;
+            
+            const endDate = prompt("Enter end date:", job.endDate);
+            if (endDate === null) return;
+            
+            const dutiesStr = prompt("Enter duties (separate with semicolons):", job.duties.join("; "));
+            if (dutiesStr === null) return;
+            
+            // Update job
+            job.title = title;
+            job.company = company;
+            job.startDate = startDate;
+            job.endDate = endDate;
+            job.duties = dutiesStr.split(";").map(duty => duty.trim());
+            
+            loadData();
+            updatePreview();
+        }
+
+        // Edit an education entry
+        function editEducation(index) {
+            const edu = resumeData.education[index];
+            
+            // Prompt for new values
+            const institution = prompt("Enter institution name:", edu.institution);
+            if (institution === null) return;
+            
+            const degree = prompt("Enter degree/certification:", edu.degree);
+            if (degree === null) return;
+            
+            const startDate = prompt("Enter start date:", edu.startDate);
+            if (startDate === null) return;
+            
+            const endDate = prompt("Enter end date:", edu.endDate);
+            if (endDate === null) return;
+            
+            // Update education
+            edu.institution = institution;
+            edu.degree = degree;
+            edu.startDate = startDate;
+            edu.endDate = endDate;
+            
+            loadData();
+            updatePreview();
+        }
+
+        // Handle photo upload
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoData = e.target.result;
+                
+                // Update preview
+                previewPhoto.src = photoData;
+                previewPhoto.classList.remove('hidden');
+                previewPhotoPlaceholder.classList.add('hidden');
+                
+                // Update editor preview
+                photoPreview.innerHTML = `<img src="${photoData}" alt="Profile Preview" class="photo-preview">`;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        // Update preview
+        function updatePreview() {
+            // Update basic info
+            resumeData.name = nameInput.value;
+            resumeData.title = titleInput.value;
+            resumeData.about = aboutInput.value;
+            
+            previewName.textContent = resumeData.name;
+            previewTitle.textContent = resumeData.title;
+            previewAbout.textContent = resumeData.about;
+            
+            // Update jobs preview
+            previewJobs.innerHTML = '';
+            if (resumeData.jobs.length === 0) {
+                previewJobs.innerHTML = '<div class="empty-message">No work experience added yet.</div>';
+            } else {
+                resumeData.jobs.forEach(job => {
+                    const jobElement = document.createElement('div');
+                    jobElement.className = 'resume-job';
+                    jobElement.innerHTML = `
+                        <div class="resume-job-title">${job.title}</div>
+                        <div class="resume-job-company">${job.company}</div>
+                        <div class="resume-job-dates">${job.startDate} - ${job.endDate}</div>
+                        <ul class="resume-job-duties">
+                            ${job.duties.map(duty => `<li class="resume-job-duty">${duty}</li>`).join('')}
+                        </ul>
+                    `;
+                    previewJobs.appendChild(jobElement);
+                });
+            }
+            
+            // Update education preview
+            previewEducation.innerHTML = '';
+            if (resumeData.education.length === 0) {
+                previewEducation.innerHTML = '<div class="empty-message">No education added yet.</div>';
+            } else {
+                resumeData.education.forEach(edu => {
+                    const eduElement = document.createElement('div');
+                    eduElement.className = 'education-item';
+                    eduElement.innerHTML = `
+                        <div class="education-institution">${edu.institution}</div>
+                        <div class="education-degree">${edu.degree}</div>
+                        <div class="education-dates">${edu.startDate} ${edu.endDate ? ' - ' + edu.endDate : ''}</div>
+                    `;
+                    previewEducation.appendChild(eduElement);
+                });
+            }
+        }
+
+        // Reset to default data
+        function resetToDefault() {
+            if (confirm("Are you sure you want to reset all data to the default resume?")) {
+                resumeData = JSON.parse(JSON.stringify(defaultData));
+                photoData = null;
+                
+                // Reset photo
+                previewPhoto.src = '';
+                previewPhoto.classList.add('hidden');
+                previewPhotoPlaceholder.classList.remove('hidden');
+                photoPreview.innerHTML = '<i class="fas fa-user"></i>';
+                
+                // Reset inputs
+                nameInput.value = resumeData.name;
+                titleInput.value = resumeData.title;
+                aboutInput.value = resumeData.about;
+                
+                // Reload data
+                loadData();
+                updatePreview();
+            }
+        }
+
+        // Download as PDF
+        function downloadPDF() {
+            // Temporarily hide buttons and adjust layout for PDF
+            const downloadBtn = document.getElementById('downloadPdfBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const originalDownloadText = downloadBtn.innerHTML;
+            const originalResetText = resetBtn.innerHTML;
+            
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            downloadBtn.disabled = true;
+            resetBtn.disabled = true;
+            
+            // Set options for PDF generation
+            const element = document.getElementById('resumePreview');
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `${resumeData.name.replace(/\s+/g, '_')}_Resume.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            // Generate PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore buttons
+                downloadBtn.innerHTML = originalDownloadText;
+                downloadBtn.disabled = false;
+                resetBtn.disabled = false;
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initResume);
+    </script>
+</body>
+</html>
